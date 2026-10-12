@@ -1,25 +1,68 @@
 # PCB Component Placement Classification
 
-> **Repository status:** README-only preview. The reviewed notebook, images, and model have not been published here yet.
+Binary image classification of acceptable versus incorrect PCB component placement, using **ImageNet-pretrained MobileNetV2** and annotation-centred crops.
 
-## Project question
+**Author:** [Mayur More](https://github.com/mayurmore0812). Academic portfolio project with a hypothetical manufacturing scenario.
 
-Can image classification help flag incorrect component placement on printed circuit boards for human inspection?
+![Saved test confusion matrix](docs/assets/figure-07-confusion-matrix.png)
 
-This academic prototype classifies cropped board images as acceptable or incorrect placement. It does not locate components automatically or replace a production inspection system for now.
+## Explore
 
-## Approach
+- [Notebook with saved results](PCB_Placement_Classification.ipynb)
+- [Saved-results HTML report](reports/PCB_Placement_Classification.html): download and open locally.
+- [Dataset, archive layout and setup](docs/DATA_AND_SETUP.md)
+- [Model and preprocessing](docs/MODEL.md)
+- [Evaluation, uncertainty and test history](docs/EVALUATION.md)
+- [Sources and licences](THIRD_PARTY_NOTICES.md)
 
-The reviewed experiment uses 228 labelled top-view images from six board designs. Annotation derived component regions are cropped and resized, then an ImageNet-pretrained MobileNetV2 is fine-tuned for binary classification. Model settings are compared on validation data, followed by an error review.
+## Data and saved results
 
-## Saved evaluation
+228 labelled V1 top-view images from six designs (CS1–CS6): 112 Good and 116 Incorrect. Stratified image-level partitions contain 160 training, 34 validation and 34 test images. **Every board design appears in every split.**
 
-The final notebook reports **0.853 balanced accuracy** on a **34-image test set**, with **15 of 17 incorrect placements** flagged. These are unseen images of board designs that also appear in training. Prior diagnostic analysis examined test data during development. Performance on entirely new board designs remains unknown on my research for now.
+| Saved result | Value |
+|---|---:|
+| Selected configuration / threshold | G19 / 0.50 |
+| Validation balanced accuracy / Incorrect F1 | 0.7639 / 0.7778 |
+| Test balanced accuracy / Incorrect F1 | 0.8529 / 0.8571 |
+| Correct Good / Incorrect | 14/17 / 15/17 |
+| False positives / false negatives | 3 / 2 |
+| Test balanced accuracy, 95% bootstrap interval | 0.7059–0.9706 |
+| Incorrect F1, 95% bootstrap interval | 0.7273–0.9697 |
 
-## Planned release
+Evidence: notebook cells 11, 21 and 23; positions are one-based and include Markdown. These are historical saved results, not a newly trained reproduction. Confusion-matrix arithmetic agrees with the saved metrics.
 
-I plan to publish one canonical notebook, a checked environment file, selected permitted example images, validation results, and a short model card. The image dataset and historical artifacts will be reviewed for sharing rights and relevance before upload.
+**Evaluation scope:** unseen images of known board designs. Historical experiments also inspected test scores for ten configurations; validation is documented as the selection basis, but this is not a never-inspected confirmatory test. No production inspection performance or unseen-board generalization is established.
 
-**Tools used:** Python, TensorFlow/Keras, MobileNetV2, Pillow, scikit-learn.
+## How it works
 
-**Code, images, and trained models are not yet available in this repository.**
+Annotated photograph → 25%-margin, 2:1 component crop → 320×160 resize → training-only augmentation → MobileNetV2 with fine-tuning from `block_14_expand` → dropout 0.30 and sigmoid classifier → average four deterministic flip views → validation-selected threshold.
+
+![Class balance and crop geometry](docs/assets/figure-01-class-balance.png)
+
+![Saved validation configuration comparison](docs/assets/figure-05-validation-grid.png)
+
+The chart displays historical scores for 24 configurations. The notebook reproduces the selected G19 model; it does not rerun the full grid search. G19 and G22 tie on validation metrics; G19 omits classifier L2.
+
+![Saved training and threshold diagnostics](docs/assets/figure-06-training-threshold.png)
+
+The code allows 30 epochs and early-stopping patience of six. The saved best epoch is 3. Random augmentation is training-only; deterministic flip averaging applies to validation and test inference.
+
+## Run locally
+
+The saved notebook records Python 3.12.10, TensorFlow 2.21.0 and Keras 3.14.0. Package versions are not locked, and this upload copy has not been trained in a fresh environment.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m jupyterlab
+```
+
+Download [SolDef_AI](https://www.kaggle.com/datasets/mauriziocalabrese/soldef-ai-pcb-dataset-for-defect-detection), name the compatible ZIP `archive.zip`, and place it beside the notebook. Start Jupyter from this repository root and run cells in order. Linux/macOS can use `.venv/bin/python` for the same commands. TensorFlow installation and accelerator support depend on the operating system and hardware.
+
+The local archive is about 1.18 GB. The notebook reads archive images into memory and trains the classifier; peak RAM, runtime and accelerator requirements were not benchmarked. MobileNetV2 may download ImageNet weights on first use. No trained checkpoint is distributed or saved by this notebook.
+
+## Limits and attribution
+
+Cropping requires supplied annotation geometry; this classifier does not locate components automatically. Small test size, shared board designs and historical test exposure limit generalization. Bootstrap intervals describe resampling of the fixed test, not all model-selection uncertainty. No deployment, latency reduction, factory cost savings or real client engagement is claimed.
+
+Dataset authors and paper: Fontana, Calabrese, Agnusdei, Papadia and Del Prete (2024), [SolDef_AI](https://doi.org/10.3390/jmmp8030117). Kaggle metadata lists the dataset as **GPL 3**. Dataset photographs shown in notebook/report figures remain third-party material; see [notices](THIRD_PARTY_NOTICES.md). No blanket licence is assigned to the project's analytical code.

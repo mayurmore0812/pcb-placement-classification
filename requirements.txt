@@ -1,0 +1,7 @@
+# Direct analytical and notebook dependencies; historical versions are documented in README.
+tensorflow
+numpy
+matplotlib
+Pillow
+scikit-learn
+jupyterlab

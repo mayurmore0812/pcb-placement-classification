@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Please cite this analysis and the original SolDef_AI dataset paper when using the project."
+type: software
+title: "PCB Component Placement Classification with MobileNetV2"
+authors:
+  - family-names: More
+    given-names: Mayur
+repository-code: "https://github.com/mayurmore0812/pcb-placement-classification"
+abstract: "Academic transfer-learning classification of acceptable versus incorrect PCB placements, evaluated on images of known board designs."
