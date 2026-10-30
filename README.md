@@ -1,4 +1,4 @@
-# PCB Component Placement Classification
+# PCB Component Placement Classification.
 
 Binary image classification of acceptable versus incorrect PCB component placement, using **ImageNet-pretrained MobileNetV2** and annotation-centred crops.
 
